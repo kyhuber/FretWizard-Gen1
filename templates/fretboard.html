@@ -28,6 +28,17 @@
         .fret {
             background-color: #e6e6e6;
         }
+        .note {
+            display: inline-block;
+            width: 30px; /* Adjust as needed */
+            height: 30px; /* Adjust as needed */
+            line-height: 30px; /* This should match the height to vertically center the text */
+            border-radius: 50%; /* This makes it a circle */
+            background-color: #4CAF50; /* Choose a color you like */
+            color: white; /* Text color */
+            font-weight: bold;
+    }
+
     </style>
     
 </head>
@@ -39,7 +50,7 @@
             <input type="hidden" name="tuning[]" value="{{ string }}">
         {% endfor %}
         
-        <label for="key">Select a Key:</label>
+        <label for="key">Select a Major Key:</label>
         <select name="key">
             <option value="C">C</option>
             <option value="C#">C#</option>
