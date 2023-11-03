@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FretWizard - Fretboard</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+    
+        .fretboard {
+            width: 100%;
+            border-collapse: collapse;
+        }
+    
+        .fretboard th, .fretboard td {
+            border: 1px solid black;
+            padding: 4px;
+            text-align: center;
+        }
+    
+        .string {
+            background-color: #f2f2f2;
+        }
+    
+        .fret {
+            background-color: #e6e6e6;
+        }
+    </style>
+    
+</head>
+<body>
+    <h1>Fretboard</h1>
+
+    <form action="/fretboard" method="post">
+        {% for string in tuning %}
+            <input type="hidden" name="tuning[]" value="{{ string }}">
+        {% endfor %}
+        
+        <label for="key">Select a Key:</label>
+        <select name="key">
+            <option value="C">C</option>
+            <option value="C#">C#</option>
+            <option value="D">D</option>
+            <option value="Eb">D#</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="F#">F#</option>
+            <option value="G">G</option>
+            <option value="G#">G#</option>
+            <option value="A">A</option>
+            <option value="Bb">B#</option>
+            <option value="B">B</option>
+            <!-- ... add other keys ... -->
+        </select>
+        <input type="submit" value="Show Notes in Key">
+    </form>
+    
+    <p>Selected Tuning: {{ tuning|join(', ') }}</p>
+    <p>Selected Key: {{ selected_key }}</p>
+
+    <!-- Fretboard layout -->
+    <table class="fretboard">
+        <thead>
+            <tr>
+                <th>String</th>
+                {% for fret in range(1, 13) %}
+                    <th>Fret {{ fret }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for string in tuning %}
+                <tr>
+                    <td class="string">{{ string }}</td>
+                    {% for fret in range(1, 13) %}
+                        <!-- Calculate the note at this fret -->
+                        {% set note = get_note_at_fret(string, fret) %}
+                        <!-- Display the note if it's in the selected key -->
+                        <td class="fret">
+                            {% if note in notes_in_key %}
+                                {{ note }}
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- "Go Back" link outside the table -->
+    <a href="/">Go Back</a>
+</body>
+</html>

@@ -3,10 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fret Wizard</title>
+    <title>FretWizard</title>
 </head>
 <body>
-    <h1>Welcome to Fret Wizard!</h1>
-    <p>Select your instrument and tuning to get started.</p>
+    <h1>Welcome to FretWizard!</h1>
+    <p>Select your instrument to get started:</p>
+
+    <form action="/" method="post">
+        <select name="instrument">
+            <option value="guitar">Guitar</option>
+            <option value="mandolin">Mandolin</option>
+            <option value="banjo">Banjo</option>
+        </select>
+        <input type="submit" value="Select Instrument">
+    </form>
+
+    {% if tuning_options %}
+    <form action="/fretboard" method="post">
+        {% for string in tuning_options %}
+            <label>{{ string }}:</label>
+            <input type="text" name="tuning[]" value="{{ string }}" size="2">
+            <br>
+        {% endfor %}
+        <input type="submit" value="Confirm Tuning">
+    </form>
+{% endif %}
+
+
 </body>
 </html>
