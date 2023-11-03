@@ -78,7 +78,7 @@
     <p><a href="/">Go Back</a></p>
 
     <!-- Fretboard layout -->
-    <table class="fretboard">
+    <table class="table"> <!-- Change the class here -->
         <thead>
             <tr>
                 <th>String</th>
@@ -97,7 +97,7 @@
                         <!-- Display the note if it's in the selected key -->
                         <td class="fret">
                             {% if note in notes_in_key %}
-                                {{ note }}
+                                <span class="note">{{ note }}</span> <!-- Apply the .note class here -->
                             {% endif %}
                         </td>
                     {% endfor %}
