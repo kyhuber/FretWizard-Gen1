@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FretWizard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
 <body>
     <h1>Welcome to Kyle's FretWizard!</h1>
     <p>Select your instrument to get started:</p>
-
+    
     <form action="/" method="post">
         <select name="instrument">
             <option value="guitar">Guitar</option>
@@ -17,17 +18,22 @@
         </select>
         <input type="submit" value="Select Instrument">
     </form>
-
+    
     {% if tuning_options %}
-    <form action="/fretboard" method="post">
-        {% for string in tuning_options %}
-            <label>{{ string }}:</label>
-            <input type="text" name="tuning[]" value="{{ string }}" size="2">
-            <br>
-        {% endfor %}
-        <input type="submit" value="Confirm Tuning">
-    </form>
-{% endif %}
+      <p>Selected Instrument: {{ instrument }}</p>
+        <form action="/fretboard" method="post">
+           <p>Modify Tuning if needed:</p>
+           {% for string in tuning_options %}
+            <div>
+                <input type="text" name="tuning[]" value="{{ string }}" size="2" maxlength="2">
+            </div>
+            {% endfor %}
+         <input type="submit" value="Confirm Tuning">
+        </form>
+    {% endif %}
+    
+
+<img src="{{ url_for('static', filename='fretboard_photo.jpg') }}" alt="Fretboard Photo" class="fretboard-image">
 
 
 </body>

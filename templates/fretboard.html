@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FretWizard - Fretboard</title>
 
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
     <style>
         body {
             font-family: Arial, sans-serif;
+            color: black;
         }
     
         .fretboard {
@@ -69,8 +72,10 @@
         <input type="submit" value="Show Notes in Key">
     </form>
     
+    <p>Instrument: {{ instrument }}</p>
     <p>Selected Tuning: {{ tuning|join(', ') }}</p>
     <p>Selected Key: {{ selected_key }}</p>
+    <p><a href="/">Go Back</a></p>
 
     <!-- Fretboard layout -->
     <table class="fretboard">
@@ -101,7 +106,7 @@
         </tbody>
     </table>
 
-    <!-- "Go Back" link outside the table -->
-    <a href="/">Go Back</a>
-</body>
+    <img src="{{ url_for('static', filename='fretboard_photo.jpg') }}" alt="Fretboard Photo" class="fretboard-image">
+
+ </body>
 </html>
