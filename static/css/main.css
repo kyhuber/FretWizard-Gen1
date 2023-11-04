@@ -1,3 +1,27 @@
+h1 {
+    color: #4CAF50; /* Green color for a lively look */
+    text-shadow: 2px 2px #ddd;
+    animation: bounce 1s infinite;
+}
+
+h4 {
+    color: #FF9800; /* Orange color for a fun look */
+    font-style: italic;
+    text-shadow: 1px 1px #ddd;
+}
+
+        /* Additional Styling */
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
 body {
     font-family: Arial, sans-serif;
     padding: 20px;
@@ -23,6 +47,10 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+}
+
+.table {
+    display: none;
 }
 
 table, th, td {

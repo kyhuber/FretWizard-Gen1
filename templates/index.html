@@ -3,25 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FretWizard</title>
+    <title>FretWizarddd</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
 </head>
 <body>
-    <h1>Welcome to the FretWizard!</h1>
-    <h2>brought to you by KAI and AI</h2>
+    <h1>🎸 Welcome to the FretWizard! 🎸</h1>
+    <h4>🎵 Jamming together: Kai & AI 🤖🎵</h4>
+
+    <script>
+        setTimeout(function() {
+            document.querySelector("h1").style.animation = "none";
+        }, 2000); // 2000 milliseconds = 2 seconds
+    </script>
+
     <p>Select your instrument to get started:</p>
     
+    
     <form action="/" method="post">
-        <select name="instrument">
+        <select name="instrument" required>
+            <option value="" disabled selected>Choose...</option>
             <option value="guitar">Guitar</option>
+            <option value="bass">Bass</option>
             <option value="mandolin">Mandolin</option>
             <option value="banjo">Banjo</option>
         </select>
         <input type="submit" value="Select Instrument">
+        <input type="hidden" name="instrument" value="{{ instrument }}">
     </form>
     
     {% if tuning_options %}
-      <p>Selected Instrument: {{ instrument }}</p>
+      <p>Instrument: {{ instrument|capitalize }}</p>
         <form action="/fretboard" method="post">
            <p>Modify Tuning if needed:</p>
            {% for string in tuning_options %}

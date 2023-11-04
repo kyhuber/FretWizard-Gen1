@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FretWizard - Fretboard</title>
-
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -40,25 +38,35 @@
             background-color: #4CAF50; /* Choose a color you like */
             color: white; /* Text color */
             font-weight: bold;
-    }
+        }
+        
+        .table {
+            display: none;
+        }
 
     </style>
-    
 </head>
 <body>
     <h1>Fretboard</h1>
 
-    <form action="/fretboard" method="post">
+    <script>
+        setTimeout(function() {
+            document.querySelector("h1").style.animation = "none";
+        }, 2000); // 2000 milliseconds = 2 seconds
+    </script>
+
+    <form action="/fretboard" method="post" id="fretboardForm">
         {% for string in tuning %}
             <input type="hidden" name="tuning[]" value="{{ string }}">
         {% endfor %}
         
-        <label for="key">Select a Major Key:</label>
-        <select name="key">
+        <label for="key">Select a Key:</label>
+        <select name="key" required>
+            <option value="">Choose...</option>
             <option value="C">C</option>
             <option value="C#">C#</option>
             <option value="D">D</option>
-            <option value="Eb">D#</option>
+            <option value="D#">D#</option>
             <option value="E">E</option>
             <option value="F">F</option>
             <option value="F#">F#</option>
@@ -67,18 +75,33 @@
             <option value="A">A</option>
             <option value="A#">A#</option>
             <option value="B">B</option>
-            <!-- ... add other keys ... -->
         </select>
+        <br>
+
+        <label for="scale_type">Select Scale Type:</label>
+        <select name="scale_type" required>
+            <option value="">Choose...</option>
+            <option value="major">Major</option>
+            <option value="minor">Minor</option>
+        </select>
+        <br>
+
         <input type="submit" value="Show Notes in Key">
     </form>
     
-    <p>Instrument: {{ instrument }}</p>
-    <p>Selected Tuning: {{ tuning|join(', ') }}</p>
-    <p>Selected Key: {{ selected_key }}</p>
-    <p><a href="/">Go Back</a></p>
+    <div id="fretboardDetails">
+        <p>Instrument: {{ instrument }}</p>
+        <p>Selected Tuning: {{ tuning|join(', ') }}</p>
+        <p>Selected Key: {{ selected_key }}</p>
+        <p><a href="/">Go Back</a></p>
 
     <!-- Fretboard layout -->
-    <table class="table">
+    {% if selected_key and notes_in_key %}
+        <script>
+            // Display the table if the selected_key and notes_in_key variables are set
+            document.getElementById('fretboardTable').style.display = "table";
+        </script>
+        <table class="table" id="fretboardTable">
         <thead>
             <tr>
                 <th>String</th>
@@ -105,8 +128,20 @@
             {% endfor %}
         </tbody>
     </table>
+    {% endif %}
 
-    <img src="{{ url_for('static', filename='fretboard_hands.jpg') }}" alt="Fretboard Hands" class="fretboard-image">
+        <img src="{{ url_for('static', filename='fretboard_hands.jpg') }}" alt="Fretboard Hands" class="fretboard-image">
+    </div>
 
- </body>
+    <script>
+        document.getElementById('fretboardForm').addEventListener('submit', function(event) {
+            // Prevent the default form submission behavior
+            event.preventDefault();
+
+            // Display the table
+            document.getElementById('fretboardTable').style.display = "table";
+    });
+    </script>
+    
+</body>
 </html>

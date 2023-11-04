@@ -1,0 +1,6 @@
+{
+    "terminal.integrated.env.windows": {
+        "FLASK_ENV": "development"
+    }
+
+}
