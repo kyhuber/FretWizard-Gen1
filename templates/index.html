@@ -12,9 +12,21 @@
     <h4>🎵 Jamming together: Kai & AI 🤖🎵</h4>
 
     <script>
-        setTimeout(function() {
-            document.querySelector("h1").style.animation = "none";
-        }, 2000); // 2000 milliseconds = 2 seconds
+    // Check if the animation has already been played in this session
+        if (!sessionStorage.getItem('animationPlayed')) {
+    // If not, play the animation (assuming it's set in your CSS by default)
+    
+    // After the animation duration (2 seconds in this case), remove the animation
+            setTimeout(function() {
+                document.querySelector("h1").style.animation = "none";
+            }, 2000); // 2000 milliseconds = 2 seconds
+
+    // Set the animationPlayed item in sessionStorage to true
+        sessionStorage.setItem('animationPlayed', 'true');
+        } else {
+    // If the animation has already been played, ensure it doesn't play again
+        document.querySelector("h1").style.animation = "none";
+        }
     </script>
 
     <p>Select your instrument to get started:</p>
@@ -28,25 +40,32 @@
             <option value="mandolin">Mandolin</option>
             <option value="banjo">Banjo</option>
         </select>
-        <input type="submit" value="Select Instrument">
-        <input type="hidden" name="instrument" value="{{ instrument }}">
+        <input type="submit" name="action" value="Select Instrument">
     </form>
+
+    <form action="/fretboard" method="post">
+        <input type="hidden" name="instrument" value="{{ instrument }}">
+        ...
+    </form>
+     
     
     {% if tuning_options %}
-      <p>Instrument: {{ instrument|capitalize }}</p>
-        <form action="/fretboard" method="post">
-           <p>Modify Tuning if needed:</p>
-           {% for string in tuning_options %}
-            <div>
-                <input type="text" name="tuning[]" value="{{ string }}" size="2" maxlength="2">
-            </div>
+        <form action="/" method="post">
+            <p>Modify Tuning if needed:</p>
+            {% for string in tuning_options %}
+                <div>
+                    <input type="text" name="tuning[]" value="{{ string }}" size="2" maxlength="2">
+                </div>
             {% endfor %}
-         <input type="submit" value="Confirm Tuning">
+            <!-- Hidden input to store the selected instrument's value -->
+            <input type="hidden" name="instrument_hidden" value="{{ instrument }}">
+            <input type="submit" name="action" value="Confirm Tuning">
         </form>
     {% endif %}
+
     
 
-<img src="{{ url_for('static', filename='fretboard_photo.jpg') }}" alt="Fretboard Photo" class="fretboard-image">
+<img src="{{ url_for('static', filename='images/fretboard_photo.jpg') }}" alt="Fretboard Photo" class="fretboard-image">
 
 
 </body>

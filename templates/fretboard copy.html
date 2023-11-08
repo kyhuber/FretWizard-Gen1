@@ -31,12 +31,12 @@
         }
         .note {
             display: inline-block;
-            width: 30px;
-            height: 30px;
-            line-height: 30px;
-            border-radius: 50%;
-            background-color: #4CAF50;
-            color: white;
+            width: 30px; /* Adjust as needed */
+            height: 30px; /* Adjust as needed */
+            line-height: 30px; /* This should match the height to vertically center the text */
+            border-radius: 50%; /* This makes it a circle */
+            background-color: #4CAF50; /* Choose a color you like */
+            color: white; /* Text color */
             font-weight: bold;
         }
         
@@ -47,35 +47,61 @@
     </style>
 </head>
 <body>
-    <h1>Fretboard for {{ instrument }}</h1>
-    <a href="/">Back to Change Instrument</a>
-    <p>Selected Tuning: {{ inverted_tuning|join(', ') }}</p>
+    <h1>Fretboard</h1>
 
-    <form method="post" id="fretboardForm">
+    <script>
+        setTimeout(function() {
+            document.querySelector("h1").style.animation = "none";
+        }, 2000); // 2000 milliseconds = 2 seconds
+    </script>
+
+    <form action="/fretboard" method="post" id="fretboardForm">
         {% for string in tuning %}
-            <input type="hidden" name="tuning[]" value="{{ string }}">
+             <input type="hidden" name="instrument" value="{{ instrument }}">
+             <input type="hidden" name="tuning[]" value="{{ string }}">
         {% endfor %}
         
         <label for="key">Select a Key:</label>
         <select name="key" required>
-            {% for note in ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'] %}
-                <option value="{{ note }}">{{ note }}</option>
-            {% endfor %}
+            <option value="">Choose...</option>
+            <option value="C">C</option>
+            <option value="C#">C#</option>
+            <option value="D">D</option>
+            <option value="D#">D#</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="F#">F#</option>
+            <option value="G">G</option>
+            <option value="G#">G#</option>
+            <option value="A">A</option>
+            <option value="A#">A#</option>
+            <option value="B">B</option>
         </select>
         <br>
 
         <label for="scale_type">Select Scale Type:</label>
         <select name="scale_type" required>
+            <option value="">Choose...</option>
             <option value="major">Major</option>
             <option value="minor">Minor</option>
         </select>
         <br>
 
-        <input type="submit" value="Show Fretboard">
+        <input type="submit" value="Show Notes in Key">
     </form>
+    
+    <div id="fretboardDetails">
+        <p>Instrument: {{ instrument }}</p>
+        <p>Selected Tuning: {{ tuning|join(', ') }}</p>
+        <p>Selected Key: {{ selected_key }}</p>
+        <p><a href="/">Go Back</a></p>
 
     <!-- Fretboard layout -->
     {% if selected_key and notes_in_key %}
+        <script>
+            // Display the table if the selected_key and notes_in_key variables are set
+            document.getElementById('fretboardTable').style.display = "table";
+        </script>
         <table class="table" id="fretboardTable">
         <thead>
             <tr>
@@ -102,50 +128,21 @@
                 </tr>
             {% endfor %}
         </tbody>
-        </table>
+    </table>
     {% endif %}
 
-    {% if instrument_image %}
-    <img src="{{ instrument_image }}" alt="{{ session['instrument'] }} Image">
-    {% else %}
-    <p>No image available</p>
-    {% endif %}
+        <img src="{{ url_for('static', filename='fretboard_hands.jpg') }}" alt="Fretboard Hands" class="fretboard-image">
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var form = document.getElementById('fretboardForm');
-            form.onsubmit = function(e) {
-                e.preventDefault(); // Prevent the default form submission
-                var formData = new FormData(form);
-                
-                fetch('/fretboard', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.text())
-                .then(html => {
-                    var parser = new DOMParser();
-                    var doc = parser.parseFromString(html, 'text/html');
-                    var table = doc.getElementById('fretboardTable');
-                    var currentTable = document.getElementById('fretboardTable');
-                    
-                    // Replace the current table with the new one from the response
-                    if (currentTable && table) {
-                        currentTable.parentNode.replaceChild(table, currentTable);
-                    }
-                    
-                    // Show the table
-                    if (table) {
-                        table.style.display = 'table'; // Change the display style to show the table
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            };
-        });
-        </script>
+        document.getElementById('fretboardForm').addEventListener('submit', function(event) {
+            // Prevent the default form submission behavior
+            event.preventDefault();
+
+            // Display the table
+            document.getElementById('fretboardTable').style.display = "table";
+    });
+    </script>
     
 </body>
 </html>

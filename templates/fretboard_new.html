@@ -3,88 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fretboard New</title>
+    <title>FretWizard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <script>
+        // Define ALL_NOTES at the top of your script so it's available when needed
+        const ALL_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Event listener for the key selection
+            document.getElementById('keySelect').addEventListener('change', fetchAndUpdate);
+
+            // Event listeners for each note selection on the strings
+            document.querySelectorAll('.note-input').forEach(function(noteInput, index) {
+                noteInput.addEventListener('change', function() {
+                    var selectedNote = this.value;
+                    var stringNumber = index + 1; // Adjusted to account for header row
+                    updateStringNotes(stringNumber, selectedNote); // Refresh the table with the new tuning
+                });
+            });
+
+            // Event listener for the scale type selection
+            document.getElementById('scaleTypeSelect').addEventListener('change', fetchAndUpdate);
+
+            // Event listener for the Add String button
+            document.getElementById('addStringButton').addEventListener('click', addString);
+        });
+
+
+        function addString() {
+            // Send a POST request to the server to add a new string
+            fetch('/add_string', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+                // No need to send a body, as the server will just append a default note
+            }).then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Get the table body where the strings are listed
+                    var tableBody = document.querySelector('.fretboard tbody');
+                    var stringCount = document.querySelectorAll('.note-input').length;
+                    var newRow = tableBody.insertRow(-1); // Insert at the end of the table
+
+                    // Create the dropdown cell
+                    var cellDropdown = newRow.insertCell(0);
+                    var selectHTML = `<select class="note-input" data-string="${stringCount + 1}">
+                                        <option value="">Select Note</option>`;
+                    ALL_NOTES.forEach(function(note) {
+                        selectHTML += `<option value="${note}">${note}</option>`;
+                    });
+                    selectHTML += `</select>`;
+                    cellDropdown.innerHTML = selectHTML;
+
+                    // Create the fret cells
+                    for (var i = 0; i < 15; i++) {
+                        var cellFret = newRow.insertCell(i + 1);
+                        cellFret.classList.add('string-container');
+                        cellFret.setAttribute('data-note', ''); // Default blank value
+                    }
+
+                    // Add event listener to the new dropdown
+                    cellDropdown.querySelector('.note-input').addEventListener('change', function() {
+                        var selectedNote = this.value;
+                        updateStringNotes(stringCount + 1, selectedNote); // +1 to account for the array starting at 0
+                        fetchAndUpdate(); // Refresh the table with the new tuning
+                    });
+                }
+            }).catch(error => {
+                console.error('Error adding string:', error);
+            });
+        }
+
+        function updateStringNotes(stringNumber, selectedNote) {
+            // Use the stringNumber directly since it's already adjusted for the header row
+            var frets = document.querySelectorAll('.fretboard tr:nth-child(' + stringNumber + ') .string-container');
+            frets.forEach(function(fret, fretIndex) {
+                var note = calculateFretNote(selectedNote, fretIndex);
+                fret.setAttribute('data-note', note);
+            });
+            fetchAndUpdate(); // Call this to refresh the highlighted notes
+        }
+
+        function fetchAndUpdate() {
+            var key = document.getElementById('keySelect').value;
+            var scaleType = document.getElementById('scaleTypeSelect').value; // Get the selected scale type
+            if (key) {
+                fetch('/get_scale_notes?key=' + key + '&scaleType=' + scaleType)
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then(function(data) {
+                        if (data.success) {
+                            updateFretboard(data.notes);
+                        } else {
+                            console.error('Error:', data.message);
+                        }
+                    })
+                    .catch(function(error) {
+                        console.error('Fetch error:', error);
+                    });
+            } else {
+                clearFretboard();
+            }
+        }
+
+        function calculateFretNote(stringNote, fretIndex) {
+            const chromaticScale = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            let noteIndex = chromaticScale.indexOf(stringNote);
+            let fretNoteIndex = (noteIndex + fretIndex) % chromaticScale.length;
+            return chromaticScale[fretNoteIndex];
+        }
+
+        function updateFretboard(scaleNotes) {
+            var stringContainers = document.querySelectorAll('.string-container');
+            stringContainers.forEach(function(container) {
+                var note = container.getAttribute('data-note');
+                container.innerHTML = ''; // Clear previous notes
+                if (scaleNotes.includes(note)) {
+                    var noteCircle = document.createElement('div');
+                    noteCircle.classList.add('note-circle');
+                    noteCircle.textContent = note;
+                    container.appendChild(noteCircle);
+                }
+            });
+        }
+
+        function clearFretboard() {
+            var stringContainers = document.querySelectorAll('.string-container');
+            stringContainers.forEach(function(container) {
+                container.innerHTML = ''; // Clear the fretboard
+            });
+        }
+
+    </script>
     <style>
-        .fretboard {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .fretboard th, .fretboard td {
-            border: 1px solid black;
-            padding: 4px;
-            text-align: center;
-        }
-        .note-input {
-            width: 50px;
-        }
         .note-circle {
             display: inline-block;
-            width: 30px;
-            height: 30px;
-            line-height: 30px;
+            width: 20px; /* or any size you want */
+            height: 20px; /* or any size you want */
+            line-height: 20px; /* same as height */
             border-radius: 50%;
-            background-color: #4CAF50;
-            color: white;
-            font-weight: bold;
-            position: absolute;
-            margin-top: -15px;
+            background-color: #FF0; /* circle color */
+            text-align: center;
+            color: black; /* text color */
+            margin: 2px;
         }
-        .string-container {
-            position: relative;
-            height: 30px;
-        }
+        /* Add additional CSS for the fretboard appearance */
     </style>
 </head>
 <body>
-    <h1>Fretboard</h1>
-    <form id="fretboardForm">
-        <table class="fretboard">
-            <thead>
+    <h1>FretWizard</h1>
+    <div id="scaleControls">
+        <select id="keySelect">
+            <option value="">Select Key</option>
+            {% for note in all_notes %}
+                <option value="{{ note }}">{{ note }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div id="scaleTypeControls">
+        <select id="scaleTypeSelect">
+            <option value="major">Major</option>
+            <option value="minor">Minor</option>
+        </select>
+    </div>  
+
+    <table class="fretboard">
+        <thead>
+            <tr>
+                <th></th> <!-- Placeholder for string labels -->
+                {% for fret in range(15) %}
+                    <th>{{ fret }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for string in default_tuning %}
                 <tr>
-                    <th></th> <!-- Placeholder for the note input boxes -->
+                    <td>
+                        <select class="note-input" data-string="{{ loop.index0 }}">
+                            <option value="">Select Note</option>
+                            {% for note in all_notes %}
+                                <option value="{{ note }}" {% if string == note %}selected{% endif %}>{{ note }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
                     {% for fret in range(15) %}
-                        <th>{{ fret }}</th>
+                        <td class="string-container" data-note="{{ get_note_at_fret(string, fret) }}"></td>
                     {% endfor %}
                 </tr>
-            </thead>
-            <tbody>
-                {% for string in range(4) %}
-                    <tr>
-                        <td>
-                            <input type="text" class="note-input" name="string{{ string }}" data-string="{{ string }}" placeholder="Note">
-                        </td>
-                        {% for fret in range(15) %}
-                            <td class="string-container"></td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </form>
-    <script>
-        document.querySelectorAll('.note-input').forEach(input => {
-            input.addEventListener('change', function() {
-                let stringIndex = this.getAttribute('data-string');
-                let noteValue = this.value.toUpperCase();
-                let noteElements = document.querySelectorAll(`tr:nth-child(${parseInt(stringIndex) + 2}) .string-container`);
-                noteElements.forEach((element, index) => {
-                    element.innerHTML = ''; // Clear previous notes
-                    let noteSpan = document.createElement('span');
-                    noteSpan.classList.add('note-circle');
-                    noteSpan.textContent = calculateNote(noteValue, index);
-                    element.appendChild(noteSpan);
-                });
-            });
-        });
-
-        function calculateNote(startNote, halfSteps) {
-            const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-            let startIndex = notes.indexOf(startNote);
-            if (startIndex === -1) return ''; // Invalid note
-            let noteIndex = (startIndex + halfSteps) % notes.length;
-            return notes[noteIndex];
-        }
-    </script>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div style="text-align: left;">
+        <button id="addStringButton" style="margin-top: 10px;">Add String</button>
+    </div>
 </body>
 </html>

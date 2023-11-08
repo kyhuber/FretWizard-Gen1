@@ -1,7 +1,8 @@
 h1 {
     color: #4CAF50; /* Green color for a lively look */
     text-shadow: 2px 2px #ddd;
-    animation: bounce 1s infinite;
+    transition: transform 0.5s ease-in-out;
+    ## animation: bounce 1s infinite;
 }
 
 h4 {
