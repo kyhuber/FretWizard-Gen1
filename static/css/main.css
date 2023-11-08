@@ -81,3 +81,58 @@ td {
     font-weight: bold;
     font-size: 1.2em;
 }
+
+.fretboard {
+    background: #8B5A2B; /* a wood-like color */
+    border: 1px solid #3E1F00; /* dark border to represent the edge of the fretboard */
+    border-spacing: 0; /* removes space between cells */
+  }
+  
+  .fretboard th, .fretboard td {
+    border-left: 1px solid #C0A080; /* light color to represent frets */
+    height: 20px;
+  }
+  
+  .fretboard th:first-child, .fretboard td:first-child {
+    border-left: none; /* no fret on the first cell */
+  }
+  
+  .string-container {
+    background: #FFF8DC; /* a light color to represent the string area */
+    position: relative; /* allows absolute positioning inside */
+  }
+  
+  .note-circle {
+    /* your existing styles */
+  }
+  
+  /* Style for the strings */
+  .string-container::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px; /* string thickness */
+    background-color: #D3D3D3; /* string color */
+    transform: translateX(-50%);
+  }
+  
+  /* Style for the fret markers */
+  .fretboard td:nth-child(3), /* 3rd fret */
+  .fretboard td:nth-child(5), /* 5th fret */
+  .fretboard td:nth-child(7), /* 7th fret */
+  .fretboard td:nth-child(9), /* 9th fret */
+  .fretboard td:nth-child(12) /* 12th fret */
+  ::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    background-color: #FFF;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
