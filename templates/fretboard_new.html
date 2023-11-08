@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fretboard New</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <style>
+        .fretboard {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .fretboard th, .fretboard td {
+            border: 1px solid black;
+            padding: 4px;
+            text-align: center;
+        }
+        .note-input {
+            width: 50px;
+        }
+        .note-circle {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+            position: absolute;
+            margin-top: -15px;
+        }
+        .string-container {
+            position: relative;
+            height: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fretboard</h1>
+    <form id="fretboardForm">
+        <table class="fretboard">
+            <thead>
+                <tr>
+                    <th></th> <!-- Placeholder for the note input boxes -->
+                    {% for fret in range(15) %}
+                        <th>{{ fret }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for string in range(4) %}
+                    <tr>
+                        <td>
+                            <input type="text" class="note-input" name="string{{ string }}" data-string="{{ string }}" placeholder="Note">
+                        </td>
+                        {% for fret in range(15) %}
+                            <td class="string-container"></td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </form>
+    <script>
+        document.querySelectorAll('.note-input').forEach(input => {
+            input.addEventListener('change', function() {
+                let stringIndex = this.getAttribute('data-string');
+                let noteValue = this.value.toUpperCase();
+                let noteElements = document.querySelectorAll(`tr:nth-child(${parseInt(stringIndex) + 2}) .string-container`);
+                noteElements.forEach((element, index) => {
+                    element.innerHTML = ''; // Clear previous notes
+                    let noteSpan = document.createElement('span');
+                    noteSpan.classList.add('note-circle');
+                    noteSpan.textContent = calculateNote(noteValue, index);
+                    element.appendChild(noteSpan);
+                });
+            });
+        });
+
+        function calculateNote(startNote, halfSteps) {
+            const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            let startIndex = notes.indexOf(startNote);
+            if (startIndex === -1) return ''; // Invalid note
+            let noteIndex = (startIndex + halfSteps) % notes.length;
+            return notes[noteIndex];
+        }
+    </script>
+</body>
+</html>
