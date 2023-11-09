@@ -6,6 +6,7 @@
     <title>FretWizard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 </head>
 <body>
     <h1>FretWizard</h1>
@@ -40,7 +41,7 @@
                 <tr>
                     <td>
                         <select class="note-input" data-string="{{ loop.index }}">
-                            <option value="">Select Note</option>
+                            <option value="">"--"</option>
                             {% for note in all_notes %}
                                 <option value="{{ note }}" {% if string == note %}selected{% endif %}>{{ note }}</option>
                             {% endfor %}

@@ -16,8 +16,10 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeFretboard() {
+    console.log('Initializing fretboard...'); // Log when initialization starts
     fetch('/fretwizard_setup')
         .then(response => {
+            console.log('Received response from /fretwizard_setup'); // Log when response is received
             if (!response.ok) {
                 throw new Error(`Network response was not ok, status: ${response.status}`);
             }
@@ -30,9 +32,12 @@ function initializeFretboard() {
             return response.json();
         })
         .then(data => {
+            console.log('Received JSON data:', data); // Log the JSON data received
             if (data.strings && data.default_tuning) {
                 createStringRows(data.strings, data.default_tuning);
                 populateKeyDropdown(ALL_NOTES);
+            } else {
+                console.log('Data does not have strings or default_tuning'); // Log if data is missing expected properties
             }
         })
         .catch(error => console.error('Error initializing fretboard:', error));
@@ -41,6 +46,16 @@ function initializeFretboard() {
 function populateKeyDropdown(keys) {
     const keySelect = document.getElementById('keySelect');
     keySelect.innerHTML = ''; // Clear existing options
+
+    // Add a default "Select Key" option
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Select Key';
+    defaultOption.selected = true; // Make this option selected by default
+    defaultOption.disabled = true; // Make it unselectable
+    keySelect.appendChild(defaultOption);
+
+    // Add the rest of the keys
     keys.forEach(key => {
         const option = document.createElement('option');
         option.value = key;
@@ -130,7 +145,7 @@ function addString() {
 }
 
 function updateStringNotes(stringNumber, selectedNote) {
-    // Use the stringNumber directly since it's already adjusted for the header row
+    console.log(`Updating string notes for string number: ${stringNumber}, selected note: ${selectedNote}`);
     var frets = document.querySelectorAll('.fretwizard tr:nth-child(' + stringNumber + ') .string-container');
     frets.forEach(function(fret, fretIndex) {
         var note = calculateFretNote(selectedNote, fretIndex);
@@ -140,17 +155,20 @@ function updateStringNotes(stringNumber, selectedNote) {
 }
 
 function fetchAndUpdate() {
+    console.log('Fetching and updating scale notes...');
     var key = document.getElementById('keySelect').value;
     var scaleType = document.getElementById('scaleTypeSelect').value; // Get the selected scale type
+    console.log(`Selected key: ${key}, scale type: ${scaleType}`);
     if (key) {
         fetch('/get_scale_notes?key=' + key + '&scaleType=' + scaleType)
             .then(function(response) {
                 return response.json();
             })
             .then(function(data) {
+                console.log('Data received from get_scale_notes:', data);
                 if (data.success) {
                     updateFretwizard(data.notes);
-                    highlightRootNotes()
+                    highlightRootNotes();
                 } else {
                     console.error('Error:', data.message);
                 }
@@ -164,16 +182,21 @@ function fetchAndUpdate() {
 }
 
 function calculateFretNote(stringNote, fretIndex) {
+    console.log(`Calculating fret note for string note: ${stringNote}, fret index: ${fretIndex}`);
     const chromaticScale = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
     let noteIndex = chromaticScale.indexOf(stringNote);
     let fretNoteIndex = (noteIndex + fretIndex) % chromaticScale.length;
-    return chromaticScale[fretNoteIndex];
+    let calculatedNote = chromaticScale[fretNoteIndex];
+    console.log(`Calculated note: ${calculatedNote}`);
+    return calculatedNote;
 }
 
 function updateFretwizard(scaleNotes) {
+    console.log('Updating fretwizard with scale notes:', scaleNotes);
     var stringContainers = document.querySelectorAll('.string-container');
     stringContainers.forEach(function(container) {
         var note = container.getAttribute('data-note');
+        console.log(`Updating note: ${note} in fretwizard`);
         container.innerHTML = ''; // Clear previous notes
         if (scaleNotes.includes(note)) {
             var noteCircle = document.createElement('div');
@@ -187,7 +210,9 @@ function updateFretwizard(scaleNotes) {
 }
 
 function highlightRootNotes() {
+    console.log('Highlighting root notes...');
     var selectedKey = document.getElementById('keySelect').value;
+    console.log(`Selected key for highlighting: ${selectedKey}`);
     var noteCircles = document.querySelectorAll('.note-circle');
   
     noteCircles.forEach(function(circle) {

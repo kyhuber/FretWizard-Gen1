@@ -1,7 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
-import os
-
-os.environ['FLASK_ENV'] = 'development'
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -14,9 +11,13 @@ INSTRUMENT_STRINGS = {
     'banjo': ['D', 'B', 'G', 'D', 'G'],  # Assuming a 5-string banjo
 }
 ALL_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-
 major_scale_intervals = [2, 2, 1, 2, 2, 2, 1]
 minor_scale_intervals = [2, 1, 2, 2, 1, 2, 2]
+
+SCALE_INTERVALS = {
+    "major": major_scale_intervals,
+    "minor": minor_scale_intervals,
+}
 
 INSTRUMENT_IMAGES = {
     'guitar': 'lespaul.jpg',
@@ -26,12 +27,8 @@ INSTRUMENT_IMAGES = {
 }
 
 def get_notes_in_key(key, scale_type):
-    # Choose the scale intervals based on the scale type
-    if scale_type == "major":
-        scale_intervals = major_scale_intervals
-    elif scale_type == "minor":
-        scale_intervals = minor_scale_intervals
-    else:
+    scale_intervals = SCALE_INTERVALS.get(scale_type, None)
+    if scale_intervals is None:
         raise ValueError("Invalid scale type. Choose 'major' or 'minor'.")
     
     start_index = ALL_NOTES.index(key)
@@ -45,16 +42,23 @@ def get_note_at_fret(string, fret):
     index = ALL_NOTES.index(string)
     return ALL_NOTES[(index + fret) % 12]
 
+def invert_tuning(tuning):
+    return tuning[::-1]
+
 @app.context_processor
 def utility_functions():
     return dict(get_note_at_fret=get_note_at_fret)
+
+@app.route('/')
+def index():
+    return redirect(url_for('fretwizard'))
 
 @app.route('/fretwizard', methods=['GET', 'POST'])
 def fretwizard():
     # Get the instrument and tuning from the session
     instrument = session.get('instrument', 'Guitar')
     tuning = session.get('tuning', [])
-
+    
     # Get the selected key and scale type from the request, if they exist
     selected_key = request.form.get('key')
     scale_type = request.form.get('scale_type')
@@ -65,9 +69,7 @@ def fretwizard():
         notes_in_key = get_notes_in_key(selected_key, scale_type)
 
     # Get the image for the instrument
-    instrument_image = url_for('static', filename='images/fretboard_photo.jpg')
-    if 'instrument' in session and session['instrument'].lower() in INSTRUMENT_IMAGES:
-        instrument_image = url_for('static', filename=f'images/{INSTRUMENT_IMAGES[session["instrument"].lower()]}')
+    instrument_image = INSTRUMENT_IMAGES.get(instrument.lower(), 'static/images/fretboard_photo.jpg')
 
     # Render the fretwizard form
     return render_template('fretwizard.html',
@@ -77,9 +79,6 @@ def fretwizard():
                            selected_key=selected_key,
                            notes_in_key=notes_in_key,
                            instrument_image=instrument_image)
-
-def invert_tuning(tuning):
-    return tuning[::-1]
 
 @app.route('/fretwizard_setup', methods=['GET'])
 def fretwizard_setup():
@@ -94,9 +93,12 @@ def fretwizard_setup():
 @app.route('/get_scale_notes')
 def get_scale_notes():
     key = request.args.get('key')
+    if not key:
+        return jsonify(success=False, message="Key is required."), 400
     scale_type = request.args.get('scaleType', 'major')  # Default to 'major' if not provided
     scale_notes = calculate_scale_notes(key, scale_type)
     return jsonify(success=True, notes=scale_notes)
+
 
 def calculate_scale_notes(key, scale_type):
     # Define the notes in the chromatic scale
@@ -139,4 +141,4 @@ def add_string():
     return jsonify(success=True, tuning=session['tuning'])
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
