@@ -1,4 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+import os
+
+os.environ['FLASK_ENV'] = 'development'
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -46,36 +49,8 @@ def get_note_at_fret(string, fret):
 def utility_functions():
     return dict(get_note_at_fret=get_note_at_fret)
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    instrument = None
-    tuning_options = []
-
-    if request.method == 'POST':
-        if request.form['action'] == 'Select Instrument':
-            instrument = request.form.get('instrument').lower()
-            tuning_options = INSTRUMENT_STRINGS.get(instrument, [])
-        elif request.form['action'] == 'Confirm Tuning':
-            tuning = request.form.getlist('tuning[]')
-            instrument = request.form.get('instrument_hidden').lower()
-
-            # Check if the user has selected a tuning
-            if tuning:
-                session['instrument'] = instrument.capitalize()
-                session['tuning'] = tuning
-                return redirect(url_for('fretboard'))
-            else:
-                # Display an error message to the user
-                flash('You must select a tuning.')
-
-    return render_template('index.html', instrument=instrument, tuning_options=tuning_options)
-
-
-def invert_tuning(tuning):
-    return tuning[::-1]
-
-@app.route('/fretboard', methods=['GET', 'POST'])
-def fretboard():
+@app.route('/fretwizard', methods=['GET', 'POST'])
+def fretwizard():
     # Get the instrument and tuning from the session
     instrument = session.get('instrument', 'Guitar')
     tuning = session.get('tuning', [])
@@ -94,8 +69,8 @@ def fretboard():
     if 'instrument' in session and session['instrument'].lower() in INSTRUMENT_IMAGES:
         instrument_image = url_for('static', filename=f'images/{INSTRUMENT_IMAGES[session["instrument"].lower()]}')
 
-    # Render the fretboard form
-    return render_template('fretboard.html',
+    # Render the fretwizard form
+    return render_template('fretwizard.html',
                            tuning=tuning,
                            inverted_tuning=invert_tuning(tuning),
                            instrument=session.get('instrument', 'Guitar'),
@@ -103,14 +78,18 @@ def fretboard():
                            notes_in_key=notes_in_key,
                            instrument_image=instrument_image)
 
-@app.route('/fretboard_new', methods=['GET'])
-def fretboard_new():
+def invert_tuning(tuning):
+    return tuning[::-1]
+
+@app.route('/fretwizard_setup', methods=['GET'])
+def fretwizard_setup():
     strings = 4  # Number of strings
     default_tuning = ['G', 'D', 'A', 'E']  # Default tuning for a 4-string bass
     # Pass the ALL_NOTES constant and default tuning to the template
-    return render_template('fretboard_new.html', all_notes=ALL_NOTES, strings=strings, default_tuning=default_tuning)
-
-
+    return jsonify(
+        all_notes=ALL_NOTES,
+        strings=strings,
+        default_tuning=default_tuning)
 
 @app.route('/get_scale_notes')
 def get_scale_notes():

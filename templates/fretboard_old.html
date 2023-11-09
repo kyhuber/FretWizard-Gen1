@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FretWizard - Fretboard</title>
+    <title>FretWizard - fretboard_old</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <style>
         body {
@@ -11,12 +11,12 @@
             color: black;
         }
     
-        .fretboard {
+        .fretboard_old {
             width: 100%;
             border-collapse: collapse;
         }
     
-        .fretboard th, .fretboard td {
+        .fretboard_old th, .fretboard_old td {
             border: 1px solid black;
             padding: 4px;
             text-align: center;
@@ -47,11 +47,11 @@
     </style>
 </head>
 <body>
-    <h1>Fretboard for {{ instrument }}</h1>
+    <h1>fretboard_old for {{ instrument }}</h1>
     <a href="/">Back to Change Instrument</a>
     <p>Selected Tuning: {{ inverted_tuning|join(', ') }}</p>
 
-    <form method="post" id="fretboardForm">
+    <form method="post" id="fretboard_oldForm">
         {% for string in tuning %}
             <input type="hidden" name="tuning[]" value="{{ string }}">
         {% endfor %}
@@ -71,12 +71,12 @@
         </select>
         <br>
 
-        <input type="submit" value="Show Fretboard">
+        <input type="submit" value="Show fretboard_old">
     </form>
 
-    <!-- Fretboard layout -->
+    <!-- fretboard_old layout -->
     {% if selected_key and notes_in_key %}
-        <table class="table" id="fretboardTable">
+        <table class="table" id="fretboard_oldTable">
         <thead>
             <tr>
                 <th>String</th>
@@ -114,12 +114,12 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            var form = document.getElementById('fretboardForm');
+            var form = document.getElementById('fretboard_oldForm');
             form.onsubmit = function(e) {
                 e.preventDefault(); // Prevent the default form submission
                 var formData = new FormData(form);
                 
-                fetch('/fretboard', {
+                fetch('/fretboard_old', {
                     method: 'POST',
                     body: formData
                 })
@@ -127,8 +127,8 @@
                 .then(html => {
                     var parser = new DOMParser();
                     var doc = parser.parseFromString(html, 'text/html');
-                    var table = doc.getElementById('fretboardTable');
-                    var currentTable = document.getElementById('fretboardTable');
+                    var table = doc.getElementById('fretboard_oldTable');
+                    var currentTable = document.getElementById('fretboard_oldTable');
                     
                     // Replace the current table with the new one from the response
                     if (currentTable && table) {

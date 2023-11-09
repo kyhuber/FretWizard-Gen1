@@ -2,28 +2,11 @@
 const ALL_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the fretboard when the page loads
+    initializeFretboard();
+
     // Event listener for the key selection
     document.getElementById('keySelect').addEventListener('change', fetchAndUpdate);
-
-    document.getElementById('keySelect').addEventListener('change', function(event) {
-      
-        noteCircles.forEach(function(circle) {
-          if (circle.textContent === selectedKey) {
-            circle.classList.add('root-note');
-          } else {
-            circle.classList.remove('root-note');
-          }
-        });
-      });
-
-    // Event listeners for each note selection on the strings
-    document.querySelectorAll('.note-input').forEach(function(noteInput, index) {
-        noteInput.addEventListener('change', function() {
-            var selectedNote = this.value;
-            var stringNumber = index + 1; // Adjusted to account for header row
-            updateStringNotes(stringNumber, selectedNote); // Refresh the table with the new tuning
-        });
-    });
 
     // Event listener for the scale type selection
     document.getElementById('scaleTypeSelect').addEventListener('change', fetchAndUpdate);
@@ -32,6 +15,74 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('addStringButton').addEventListener('click', addString);
 });
 
+function initializeFretboard() {
+    fetch('/fretwizard_setup')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Network response was not ok, status: ${response.status}`);
+            }
+            let contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                return response.text().then(text => {
+                    throw new Error(`Expected JSON response but received: ${contentType}, body: ${text}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.strings && data.default_tuning) {
+                createStringRows(data.strings, data.default_tuning);
+                populateKeyDropdown(ALL_NOTES);
+            }
+        })
+        .catch(error => console.error('Error initializing fretboard:', error));
+}
+
+function populateKeyDropdown(keys) {
+    const keySelect = document.getElementById('keySelect');
+    keySelect.innerHTML = ''; // Clear existing options
+    keys.forEach(key => {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = key;
+        keySelect.appendChild(option);
+    });
+}
+
+function createStringRows(numStrings, tuningNotes) {
+    var tableBody = document.querySelector('.fretwizard tbody');
+    // Clear existing rows
+    tableBody.innerHTML = '';
+
+    for (let i = 0; i < numStrings; i++) {
+        let newRow = tableBody.insertRow(-1); // Insert at the end of the table
+        let cellDropdown = newRow.insertCell(0);
+        let selectHTML = `<select class="note-input" data-string="${i + 1}">
+                            <option value="">Select Note</option>`;
+
+        ALL_NOTES.forEach(note => {
+            selectHTML += `<option value="${note}"${tuningNotes[i] === note ? ' selected' : ''}>${note}</option>`;
+        });
+
+        selectHTML += `</select>`;
+        cellDropdown.innerHTML = selectHTML;
+
+        // Create the fret cells
+        for (let fret = 0; fret < 15; fret++) {
+            let cellFret = newRow.insertCell(fret + 1);
+            cellFret.classList.add('string-container');
+            let noteAtFret = calculateFretNote(tuningNotes[i], fret);
+            cellFret.setAttribute('data-note', noteAtFret);
+        }
+
+        // Add event listener to the new dropdown
+        cellDropdown.querySelector('.note-input').addEventListener('change', function() {
+            var selectedNote = this.value;
+            updateStringNotes(i + 1, selectedNote); // +1 because string numbers are 1-indexed
+            fetchAndUpdate(); // Refresh the table with the new tuning
+        });
+    }
+}
 
 function addString() {
     // Send a POST request to the server to add a new string
@@ -45,7 +96,7 @@ function addString() {
     .then(data => {
         if (data.success) {
             // Get the table body where the strings are listed
-            var tableBody = document.querySelector('.fretboard tbody');
+            var tableBody = document.querySelector('.fretwizard tbody');
             var stringCount = document.querySelectorAll('.note-input').length;
             var newRow = tableBody.insertRow(-1); // Insert at the end of the table
 
@@ -80,7 +131,7 @@ function addString() {
 
 function updateStringNotes(stringNumber, selectedNote) {
     // Use the stringNumber directly since it's already adjusted for the header row
-    var frets = document.querySelectorAll('.fretboard tr:nth-child(' + stringNumber + ') .string-container');
+    var frets = document.querySelectorAll('.fretwizard tr:nth-child(' + stringNumber + ') .string-container');
     frets.forEach(function(fret, fretIndex) {
         var note = calculateFretNote(selectedNote, fretIndex);
         fret.setAttribute('data-note', note);
@@ -98,7 +149,7 @@ function fetchAndUpdate() {
             })
             .then(function(data) {
                 if (data.success) {
-                    updateFretboard(data.notes);
+                    updateFretwizard(data.notes);
                     highlightRootNotes()
                 } else {
                     console.error('Error:', data.message);
@@ -108,7 +159,7 @@ function fetchAndUpdate() {
                 console.error('Fetch error:', error);
             });
     } else {
-        clearFretboard();
+        clearFretwizard();
     }
 }
 
@@ -119,7 +170,7 @@ function calculateFretNote(stringNote, fretIndex) {
     return chromaticScale[fretNoteIndex];
 }
 
-function updateFretboard(scaleNotes) {
+function updateFretwizard(scaleNotes) {
     var stringContainers = document.querySelectorAll('.string-container');
     stringContainers.forEach(function(container) {
         var note = container.getAttribute('data-note');
@@ -131,7 +182,7 @@ function updateFretboard(scaleNotes) {
             container.appendChild(noteCircle);
         }
     });
-    // After updating the fretboard, highlight the root notes
+    // After updating the fretwizard, highlight the root notes
     highlightRootNotes();
 }
 
@@ -148,9 +199,9 @@ function highlightRootNotes() {
     });
 }
 
-function clearFretboard() {
+function clearFretwizard() {
     var stringContainers = document.querySelectorAll('.string-container');
     stringContainers.forEach(function(container) {
-        container.innerHTML = ''; // Clear the fretboard
+        container.innerHTML = ''; // Clear the fretwizard
     });
 }
