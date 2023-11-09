@@ -76,6 +76,7 @@ th {
     color: white;
 }
 
+
 /* Letter Styling */
 td {
     font-weight: bold;
@@ -94,36 +95,71 @@ td {
   }
   
   .fretboard th:first-child, .fretboard td:first-child {
+    width: 50px;
     border-left: none; /* no fret on the first cell */
   }
   
   .string-container {
     background: #FFF8DC; /* a light color to represent the string area */
     position: relative; /* allows absolute positioning inside */
-  }
-  
+    z-index: 1; /* create a new stacking context */
+    height: 40px;
+}
+
   .note-circle {
-    /* your existing styles */
+    position: absolute; /* position absolutely within .string-container */
+    top: 50%; /* center vertically */
+    left: 50%; /* center horizontally */
+    transform: translate(-50%, -50%); /* adjust both horizontally and vertically */
+    width: 30px; /* adjust as needed */
+    height: 30px; /* adjust as needed */
+    border-radius: 50%; /* circular shape */
+    background-color: #FFF; /* background color for the circle */
+    display: flex; /* use flexbox to center content */
+    align-items: center; /* center vertically */
+    justify-content: center; /* center horizontally */
+    text-align: center; /* ensure text is centered */
+    line-height: 30px; /* adjust line height to match height for vertical centering */
+    z-index: 3;
+}
+  
+.note-input {
+    width: 50px; /* Or whatever width you prefer */
+    text-align-last: center;
+    }
+
+.keySelect {
+    width: 100px;
+    text-align-last: center;
+}
+
+.root-note {
+    border: 2px solid #4CAF50; /* Green color */
+    border-radius: 50%; /* Maintain the circle shape */
+    box-sizing: border-box; /* Include the border in the width and height */
+    z-index: 2; /* Ensure it's above the .string-container::after */
+    position: relative; /* Needed to make z-index work */
   }
   
   /* Style for the strings */
-  .string-container::after {
+  /*.string-container::after {
     content: '';
     position: absolute;
     left: 50%;
     top: 0;
     bottom: 0;
-    width: 2px; /* string thickness */
-    background-color: #D3D3D3; /* string color */
+    width: 2px;
+    background-color: #D3D3D3;
     transform: translateX(-50%);
-  }
+    z-index: 0;
+  }*/
   
-  /* Style for the fret markers */
-  .fretboard td:nth-child(3), /* 3rd fret */
-  .fretboard td:nth-child(5), /* 5th fret */
-  .fretboard td:nth-child(7), /* 7th fret */
-  .fretboard td:nth-child(9), /* 9th fret */
-  .fretboard td:nth-child(12) /* 12th fret */
+  /* Style for the fret markers
+  .fretboard td:nth-child(3),
+  .fretboard td:nth-child(5),
+  .fretboard td:nth-child(7),
+  .fretboard td:nth-child(9),
+  .fretboard td:nth-child(12)
   ::before {
     content: '';
     position: absolute;
@@ -133,6 +169,6 @@ td {
     height: 10px;
     background-color: #FFF;
     border-radius: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%); */
   }
   
