@@ -1,0 +1,144 @@
+// Define ALL_NOTES at the top of your script so it's available when needed
+const ALL_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the fretboard when the page loads
+    initializeFretboard();
+
+    // Event listeners for key and scale type selections
+    document.getElementById('keySelect').addEventListener('change', fetchAndUpdate);
+    document.getElementById('scaleTypeSelect').addEventListener('change', fetchAndUpdate);
+
+    // Event listener for the Add String button
+    document.getElementById('addStringButton').addEventListener('click', addString);
+});
+
+function initializeFretboard() {
+    // Fetch initial setup data and create string rows
+    fetch('/fretwizard_setup')
+        .then(response => response.json())
+        .then(data => {
+            if (data.strings && data.default_tuning) {
+                createStringRows(data.strings, data.default_tuning);
+                populateKeyDropdown(ALL_NOTES);
+            }
+        })
+        .catch(error => console.error('Error initializing fretboard:', error));
+}
+
+function populateKeyDropdown(keys) {
+    // Populate the key dropdown with notes
+    const keySelect = document.getElementById('keySelect');
+    keySelect.innerHTML = keys.map(key => `<option value="${key}">${key}</option>`).join('');
+}
+
+function createStringRows(numStrings, tuningNotes) {
+    var tableBody = document.querySelector('.fretwizard tbody');
+    tableBody.innerHTML = '';
+
+    for (let i = 0; i < numStrings; i++) {
+        let newRow = tableBody.insertRow(-1);
+        newRow.draggable = true; // Make the row draggable
+        newRow.addEventListener('dragstart', handleDragStart);
+        newRow.addEventListener('dragover', handleDragOver);
+        newRow.addEventListener('drop', handleDrop);
+        newRow.addEventListener('dragend', handleDragEnd);
+
+        let dragHandleCell = newRow.insertCell(0);
+        dragHandleCell.innerHTML = '☰';
+        dragHandleCell.classList.add('drag-handle');
+
+        let cellDropdown = newRow.insertCell(1);
+        cellDropdown.innerHTML = `<select class="note-input" data-string="${i + 1}">
+                                    <option value="">Select Note</option>
+                                    ${ALL_NOTES.map(note => `<option value="${note}"${tuningNotes[i] === note ? ' selected' : ''}>${note}</option>`).join('')}
+                                  </select>`;
+
+        for (let fret = 0; fret < 15; fret++) {
+            let cellFret = newRow.insertCell(fret + 2);
+            cellFret.classList.add('string-container');
+            cellFret.setAttribute('data-note', calculateFretNote(tuningNotes[i], fret));
+        }
+
+        cellDropdown.querySelector('.note-input').addEventListener('change', function() {
+            updateStringNotes(i + 1, this.value);
+            fetchAndUpdate();
+        });
+    }
+}
+
+function addString() {
+    // Add a new string to the fretboard
+    fetch('/add_string', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                var tableBody = document.querySelector('.fretwizard tbody');
+                var stringCount = tableBody.rows.length;
+                var newRow = tableBody.insertRow(-1);
+                newRow.draggable = true;
+                newRow.addEventListener('dragstart', handleDragStart);
+                newRow.addEventListener('dragover', handleDragOver);
+                newRow.addEventListener('drop', handleDrop);
+                newRow.addEventListener('dragend', handleDragEnd);
+
+                let dragHandleCell = newRow.insertCell(0);
+                dragHandleCell.innerHTML = '☰';
+                dragHandleCell.classList.add('drag-handle');
+
+                let cellDropdown = newRow.insertCell(1);
+                cellDropdown.innerHTML = `<select class="note-input" data-string="${stringCount + 1}">
+                                            <option value="">Select Note</option>
+                                            ${ALL_NOTES.map(note => `<option value="${note}">${note}</option>`).join('')}
+                                          </select>`;
+
+                for (let i = 0; i < 15; i++) {
+                    let cellFret = newRow.insertCell(i + 2);
+                    cellFret.classList.add('string-container');
+                    cellFret.setAttribute('data-note', '');
+                }
+
+                cellDropdown.querySelector('.note-input').addEventListener('change', function() {
+                    updateStringNotes(stringCount + 1, this.value);
+                    fetchAndUpdate();
+                });
+            }
+        })
+        .catch(error => console.error('Error adding string:', error));
+}
+
+// Other functions (updateStringNotes, fetchAndUpdate, calculateFretNote, updateFretwizard, highlightRootNotes, clearFretwizard) remain unchanged
+
+let draggedRow = null;
+
+function handleDragStart(e) {
+    if (e.target.classList.contains('drag-handle')) {
+        draggedRow = e.target.parentNode;
+        e.dataTransfer.effectAllowed = 'move';
+    } else {
+        e.preventDefault(); // Prevent dragging if not on drag handle
+    }
+}
+
+function handleDragOver(e) {
+    if (draggedRow) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+}
+
+function handleDrop(e) {
+    if (draggedRow) {
+        e.preventDefault();
+        let targetRow = e.target.closest('tr');
+        if (targetRow && targetRow.parentNode) {
+            targetRow.parentNode.insertBefore(draggedRow, e.clientY < targetRow.getBoundingClientRect().bottom ? targetRow : targetRow.nextSibling);
+        }
+    }
+}
+
+function handleDragEnd() {
+    if (draggedRow) {
+        draggedRow = null;
+    }
+}

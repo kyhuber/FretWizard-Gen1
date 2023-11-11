@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
 </head>
 <body>
     <h1>FretWizard</h1>
@@ -30,15 +31,18 @@
     <table class="fretwizard">
         <thead>
             <tr>
-                <th>String</th> <!-- Add string labels if needed -->
+                <th>Drag</th> <!-- Header for drag handle -->
+                <th>String</th>
                 {% for fret in range(15) %}
                     <th>{{ fret }}</th>
                 {% endfor %}
+                <th>Snap It</th>
             </tr>
         </thead>
         <tbody>
             {% for string in default_tuning %}
-                <tr>
+                <tr id="string-{{ loop.index }}" draggable="true">
+                    <td class="drag-handle">&#x2630;</td> <!-- Drag handle cell -->
                     <td>
                         <select class="note-input" data-string="{{ loop.index }}">
                             <option value="">"--"</option>
@@ -54,8 +58,10 @@
             {% endfor %}
         </tbody>
     </table>
+
     <div style="text-align: left;">
         <button id="addStringButton" style="margin-top: 10px;">Add String</button>
     </div>
+    
 </body>
 </html>

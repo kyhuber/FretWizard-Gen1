@@ -8,7 +8,7 @@ INSTRUMENT_STRINGS = {
     'guitar': ['E', 'B', 'G', 'D', 'A', 'E'],
     'bass': ['G', 'D', 'A', 'E'],
     'mandolin': ['E', 'A', 'D', 'G'],
-    'banjo': ['D', 'B', 'G', 'D', 'G'],  # Assuming a 5-string banjo
+    'banjo': ['D', 'B', 'G', 'D', 'G'],
 }
 ALL_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 major_scale_intervals = [2, 2, 1, 2, 2, 2, 1]
@@ -101,16 +101,14 @@ def get_scale_notes():
 
 
 def calculate_scale_notes(key, scale_type):
-    # Define the notes in the chromatic scale
-    chromatic_scale = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
     # Find the starting index of the key in the chromatic scale
-    start_index = chromatic_scale.index(key)
+    start_index = ALL_NOTES.index(key)
 
     # Define steps for major and minor scales
     steps = {
         'major': ['W', 'W', 'H', 'W', 'W', 'W', 'H'],
-        'minor': ['W', 'H', 'W', 'W', 'H', 'W', 'W']  # Natural minor scale steps
+        'minor': ['W', 'H', 'W', 'W', 'H', 'W', 'W']
     }
 
     # Calculate the scale notes based on the steps for the given scale type
@@ -120,7 +118,7 @@ def calculate_scale_notes(key, scale_type):
             start_index = (start_index + 2) % 12  # Move a whole step
         elif step == 'H':
             start_index = (start_index + 1) % 12  # Move a half step
-        scale_notes.append(chromatic_scale[start_index])
+        scale_notes.append(ALL_NOTES[start_index])
 
     return scale_notes
 
@@ -129,7 +127,7 @@ def calculate_scale_notes(key, scale_type):
 def add_string():
     # Check if 'tuning' is already in session, if not, create it
     if 'tuning' not in session:
-        session['tuning'] = ['E', 'A', 'D', 'G']  # Example default tuning
+        session['tuning'] = ['E', 'A', 'D', 'G']
 
     # Append a new string with a default note (e.g., 'E')
     session['tuning'].append('E')  # You can choose a different default note if you wish

@@ -2,11 +2,11 @@ h1 {
     color: #4CAF50; /* Green color for a lively look */
     text-shadow: 2px 2px #ddd;
     transition: transform 0.5s ease-in-out;
-    ## animation: bounce 1s infinite;
+    /*animation: bounce 1s infinite;*/
 }
 
 h4 {
-    color: #FF9800; /* Orange color for a fun look */
+    color: #FF9800;
     font-style: italic;
     text-shadow: 1px 1px #ddd;
 }
@@ -37,11 +37,12 @@ label, select, input {
     margin-bottom: 10px;
 }
 
-.fretboard-image {
-    width: 80%; /* or whatever width you prefer */
-    margin: 20px auto; /* adds some space around the image and centers it */
+.fretwizard-image {
+    width: 80%;
+    margin: 20px auto;
     display: block;
 }
+
 
 /* Table Styling */
 table {
@@ -64,11 +65,11 @@ th, td {
 }
 
 tr:nth-child(even) {
-    background-color: #f2f2f2 !important;
+    background-color: #f2f2f2a3 !important;
 }
 
 tr:nth-child(odd) {
-    background-color: grey !important;
+    background-color: lightgray !important;
 }
 
 th {
@@ -83,27 +84,39 @@ td {
     font-size: 1.2em;
 }
 
-.fretboard {
+.fretwizard {
+    background-image: url('images/fretboard_wood.png');
+    background-size: cover; /* or '100% 100%' to stretch to fill */
+    background-repeat: no-repeat; /* or 'repeat' for a tiling effect */
+}
+/*.fretwizard {
     background: #8B5A2B; /* a wood-like color */
-    border: 1px solid #3E1F00; /* dark border to represent the edge of the fretboard */
+    border: 2px solid #3E1F00; /* dark border to represent the edge of the fretwizard */
     border-spacing: 0; /* removes space between cells */
-  }
+  }*/
   
-  .fretboard th, .fretboard td {
+  .fretwizard th, .fretwizard td {
     border-left: 1px solid #C0A080; /* light color to represent frets */
     height: 20px;
   }
   
-  .fretboard th:first-child, .fretboard td:first-child {
-    width: 50px;
+  .fretwizard th:first-child, .fretwizard td:first-child {
+    width: 80px;
     border-left: none; /* no fret on the first cell */
   }
   
   .string-container {
-    background: #FFF8DC; /* a light color to represent the string area */
-    position: relative; /* allows absolute positioning inside */
-    z-index: 1; /* create a new stacking context */
-    height: 40px;
+    color: white;
+    background-image: url('../images/fretboard_wood.png');
+    background-size: cover; /* Adjust as needed */
+    background-repeat: no-repeat; /* Use 'repeat' if you want it to tile */
+}
+
+ /* .string-container {
+ /*   background: #FFF8DC; /* a light color to represent the string area */
+ /*   position: relative; /* allows absolute positioning inside */
+ /*   z-index: 1; /* create a new stacking context */
+ /*   height: 40px;
 }
 
   .note-circle {
@@ -124,7 +137,7 @@ td {
 }
   
 .note-input {
-    width: 50px; /* Or whatever width you prefer */
+    width: 50px;
     text-align-last: center;
     }
 
@@ -134,41 +147,48 @@ td {
 }
 
 .root-note {
-    border: 2px solid #4CAF50; /* Green color */
+    border: 3px solid #4CAF50; /* Green color */
     border-radius: 50%; /* Maintain the circle shape */
     box-sizing: border-box; /* Include the border in the width and height */
     z-index: 2; /* Ensure it's above the .string-container::after */
     position: relative; /* Needed to make z-index work */
   }
-  
-  /* Style for the strings */
-  /*.string-container::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background-color: #D3D3D3;
-    transform: translateX(-50%);
-    z-index: 0;
-  }*/
-  
-  /* Style for the fret markers
-  .fretboard td:nth-child(3),
-  .fretboard td:nth-child(5),
-  .fretboard td:nth-child(7),
-  .fretboard td:nth-child(9),
-  .fretboard td:nth-child(12)
-  ::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 10px;
-    height: 10px;
-    background-color: #FFF;
-    border-radius: 50%;
-    transform: translate(-50%, -50%); */
-  }
-  
+
+.drag-handle {
+    cursor: move;
+    background-color: #f0f0f0; /* Light grey background */
+    text-align: center;
+    vertical-align: middle;
+    font-size: 1.2em; /* Larger icon size */
+    width: 20px; /* Fixed width */
+}
+
+/* Apply alternating colors to drag handle cells */
+tr:nth-child(even) .drag-handle {
+    background-color: #f2f2f2a3; /* Light color for even rows */
+}
+
+tr:nth-child(odd) .drag-handle {
+    background-color: lightgray; /* Different color for odd rows */
+}
+
+tr.dragging {
+    opacity: 0.5;
+    background-color: #e0e0e0; /* Light grey background */
+    border: 1px dashed #000; /* Dashed border */
+}
+
+.drag-handle:hover {
+    background-color: #d0d0d0; /* Slightly darker grey on hover */
+}
+
+.delete-btn {
+    font-size: 16px; /* Adjusts the size of the icon */
+    padding: 5px 5px; /* Adjusts the padding around the icon */
+    border: none; /* Removes the border */
+    background-color: transparent; /* Sets a transparent background */
+    cursor: pointer; /* Changes cursor to pointer on hover */
+}
+.delete-btn i {
+    color: rgba(232, 19, 19, 0.75);
+}

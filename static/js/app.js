@@ -5,10 +5,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the fretboard when the page loads
     initializeFretboard();
 
-    // Event listener for the key selection
+    // Event listeners for key and scale type selections
     document.getElementById('keySelect').addEventListener('change', fetchAndUpdate);
-
-    // Event listener for the scale type selection
     document.getElementById('scaleTypeSelect').addEventListener('change', fetchAndUpdate);
 
     // Event listener for the Add String button
@@ -16,133 +14,119 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeFretboard() {
-    console.log('Initializing fretboard...'); // Log when initialization starts
+    // Fetch initial setup data and create string rows
     fetch('/fretwizard_setup')
-        .then(response => {
-            console.log('Received response from /fretwizard_setup'); // Log when response is received
-            if (!response.ok) {
-                throw new Error(`Network response was not ok, status: ${response.status}`);
-            }
-            let contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                return response.text().then(text => {
-                    throw new Error(`Expected JSON response but received: ${contentType}, body: ${text}`);
-                });
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            console.log('Received JSON data:', data); // Log the JSON data received
             if (data.strings && data.default_tuning) {
                 createStringRows(data.strings, data.default_tuning);
                 populateKeyDropdown(ALL_NOTES);
-            } else {
-                console.log('Data does not have strings or default_tuning'); // Log if data is missing expected properties
             }
         })
         .catch(error => console.error('Error initializing fretboard:', error));
 }
 
 function populateKeyDropdown(keys) {
+    // Populate the key dropdown with notes
     const keySelect = document.getElementById('keySelect');
-    keySelect.innerHTML = ''; // Clear existing options
-
-    // Add a default "Select Key" option
-    const defaultOption = document.createElement('option');
-    defaultOption.value = '';
-    defaultOption.textContent = 'Select Key';
-    defaultOption.selected = true; // Make this option selected by default
-    defaultOption.disabled = true; // Make it unselectable
-    keySelect.appendChild(defaultOption);
-
-    // Add the rest of the keys
-    keys.forEach(key => {
-        const option = document.createElement('option');
-        option.value = key;
-        option.textContent = key;
-        keySelect.appendChild(option);
-    });
+    keySelect.innerHTML = keys.map(key => `<option value="${key}">${key}</option>`).join('');
 }
 
 function createStringRows(numStrings, tuningNotes) {
     var tableBody = document.querySelector('.fretwizard tbody');
-    // Clear existing rows
     tableBody.innerHTML = '';
 
     for (let i = 0; i < numStrings; i++) {
-        let newRow = tableBody.insertRow(-1); // Insert at the end of the table
-        let cellDropdown = newRow.insertCell(0);
-        let selectHTML = `<select class="note-input" data-string="${i + 1}">
-                            <option value="">Select Note</option>`;
+        let newRow = tableBody.insertRow(-1);
+        newRow.draggable = true; // Make the row draggable
+        newRow.addEventListener('dragstart', handleDragStart);
+        newRow.addEventListener('dragover', handleDragOver);
+        newRow.addEventListener('drop', handleDrop);
+        newRow.addEventListener('dragend', handleDragEnd);
 
-        ALL_NOTES.forEach(note => {
-            selectHTML += `<option value="${note}"${tuningNotes[i] === note ? ' selected' : ''}>${note}</option>`;
+        let dragHandleCell = newRow.insertCell(0);
+        dragHandleCell.innerHTML = '☰';
+        dragHandleCell.classList.add('drag-handle');
+
+        let cellDropdown = newRow.insertCell(1);
+        cellDropdown.innerHTML = `<select class="note-input" data-string="${i + 1}">
+                                    <option value="">- -</option>
+                                    ${ALL_NOTES.map(note => `<option value="${note}"${tuningNotes[i] === note ? ' selected' : ''}>${note}</option>`).join('')}
+                                  </select>`;
+
+        let deleteCell = newRow.insertCell(-1); // Add at the end of the row
+        deleteCell.innerHTML = '<button class="delete-btn"><i class="fas fa-trash-alt"></i></button>'; // Using Font Awesome icon
+        deleteCell.querySelector('.delete-btn').addEventListener('click', function() {
+            deleteStringRow(newRow);
         });
 
-        selectHTML += `</select>`;
-        cellDropdown.innerHTML = selectHTML;
-
-        // Create the fret cells
         for (let fret = 0; fret < 15; fret++) {
-            let cellFret = newRow.insertCell(fret + 1);
+            let cellFret = newRow.insertCell(fret + 2);
             cellFret.classList.add('string-container');
-            let noteAtFret = calculateFretNote(tuningNotes[i], fret);
-            cellFret.setAttribute('data-note', noteAtFret);
+            cellFret.setAttribute('data-note', calculateFretNote(tuningNotes[i], fret));
         }
 
-        // Add event listener to the new dropdown
         cellDropdown.querySelector('.note-input').addEventListener('change', function() {
-            var selectedNote = this.value;
-            updateStringNotes(i + 1, selectedNote); // +1 because string numbers are 1-indexed
-            fetchAndUpdate(); // Refresh the table with the new tuning
+            updateStringNotes(i + 1, this.value);
+            fetchAndUpdate();
         });
+}}
+
+function addString() {
+    // Add a new string to the fretboard
+    fetch('/add_string', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                var tableBody = document.querySelector('.fretwizard tbody');
+                var stringCount = tableBody.rows.length;
+                var newRow = tableBody.insertRow(-1);
+                newRow.draggable = true;
+                newRow.addEventListener('dragstart', handleDragStart);
+                newRow.addEventListener('dragover', handleDragOver);
+                newRow.addEventListener('drop', handleDrop);
+                newRow.addEventListener('dragend', handleDragEnd);
+
+                let dragHandleCell = newRow.insertCell(0);
+                dragHandleCell.innerHTML = '☰';
+                dragHandleCell.classList.add('drag-handle');
+
+                let cellDropdown = newRow.insertCell(1);
+                cellDropdown.innerHTML = `<select class="note-input" data-string="${stringCount + 1}">
+                                            <option value="">- -</option>
+                                            ${ALL_NOTES.map(note => `<option value="${note}">${note}</option>`).join('')}
+                                          </select>`;
+
+                for (let i = 0; i < 15; i++) {
+                    let cellFret = newRow.insertCell(i + 2);
+                    cellFret.classList.add('string-container');
+                    cellFret.setAttribute('data-note', '');
+                }
+
+                // Add delete button cell
+                let deleteCell = newRow.insertCell(-1);
+                deleteCell.innerHTML = '<button class="delete-btn"><i class="fas fa-trash-alt"></i></button>';
+                deleteCell.querySelector('.delete-btn').addEventListener('click', function() {
+                    newRow.remove(); // This will remove the newRow
+                });                
+
+                cellDropdown.querySelector('.note-input').addEventListener('change', function() {
+                    updateStringNotes(stringCount + 1, this.value);
+                    fetchAndUpdate();
+                });
+            }
+        })
+        .catch(error => console.error('Error adding string:', error));
+}
+
+function deleteStringRow(row) {
+    // Optional: Add logic to confirm deletion
+    if (confirm('Are you sure you really want to snap this string?')) {
+        row.remove(); // Remove the row from the table
+        // Optional: Send a request to the server to update the state
     }
 }
 
-function addString() {
-    // Send a POST request to the server to add a new string
-    fetch('/add_string', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-        // No need to send a body, as the server will just append a default note
-    }).then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Get the table body where the strings are listed
-            var tableBody = document.querySelector('.fretwizard tbody');
-            var stringCount = document.querySelectorAll('.note-input').length;
-            var newRow = tableBody.insertRow(-1); // Insert at the end of the table
-
-            // Create the dropdown cell
-            var cellDropdown = newRow.insertCell(0);
-            var selectHTML = `<select class="note-input" data-string="${stringCount + 1}">
-                                <option value="">Select Note</option>`;
-            ALL_NOTES.forEach(function(note) {
-                selectHTML += `<option value="${note}">${note}</option>`;
-            });
-            selectHTML += `</select>`;
-            cellDropdown.innerHTML = selectHTML;
-
-            // Create the fret cells
-            for (var i = 0; i < 15; i++) {
-                var cellFret = newRow.insertCell(i + 1);
-                cellFret.classList.add('string-container');
-                cellFret.setAttribute('data-note', ''); // Default blank value
-            }
-
-            // Add event listener to the new dropdown
-            cellDropdown.querySelector('.note-input').addEventListener('change', function() {
-                var selectedNote = this.value;
-                updateStringNotes(stringCount + 1, selectedNote); // +1 to account for the array starting at 0
-                fetchAndUpdate(); // Refresh the table with the new tuning
-            });
-        }
-    }).catch(error => {
-        console.error('Error adding string:', error);
-    });
-}
 
 function updateStringNotes(stringNumber, selectedNote) {
     console.log(`Updating string notes for string number: ${stringNumber}, selected note: ${selectedNote}`);
@@ -229,4 +213,53 @@ function clearFretwizard() {
     stringContainers.forEach(function(container) {
         container.innerHTML = ''; // Clear the fretwizard
     });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.fretwizard tbody tr').forEach(row => {
+        row.addEventListener('dragstart', handleDragStart);
+        row.addEventListener('dragover', handleDragOver);
+        row.addEventListener('drop', handleDrop);
+        row.addEventListener('dragend', handleDragEnd);
+    });
+});
+
+let draggedRow = null;
+
+function handleDragStart(e) {
+    draggedRow = e.target;
+    console.log('Drag started on:', e.target);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', e.target.id);
+    e.target.classList.add('dragging');
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    console.log('Dragging over:', e.target);
+    e.dataTransfer.dropEffect = 'move';
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    console.log('Dropped on:', e.target);
+    if (draggedRow) {
+        let targetRow = e.target.closest('tr');
+        if (targetRow && targetRow.parentNode) {
+            // Determine whether to insert before or after based on mouse position
+            const rect = targetRow.getBoundingClientRect();
+            const offset = e.clientY - rect.top - (rect.height / 2);
+            if (offset > 0) {
+                targetRow.parentNode.insertBefore(draggedRow, targetRow.nextSibling);
+            } else {
+                targetRow.parentNode.insertBefore(draggedRow, targetRow);
+            }
+            // Optionally, update the server about the change
+        }
+    }
+}
+
+function handleDragEnd(e) {
+    console.log('Drag ended');
+    e.target.classList.remove('dragging');
 }
