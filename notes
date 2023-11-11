@@ -1,0 +1,33 @@
+
+App.py Functions
+get_notes_in_key
+get_note_at_fret
+invert_tuning
+calculate_scale_notes
+
+
+Routes
+/fretwizard
+/fretwizard_setup
+/getscalenotes
+/add_string
+
+
+JS Functions
+initializeFretboard
+populateKeyDropdown
+createStringRows
+addString
+deleteStringRow
+updateStringNotes
+fetchAndUpdate
+calculateFretNote
+updateFretwizard
+highlightRootNotes
+clearFretwizard
+handleDragStart
+handleDragOver
+handleDrop
+handleDragEnd
+
+
