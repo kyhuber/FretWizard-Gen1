@@ -1,0 +1,11 @@
+
+
+output of chordcharts function:
+for each chord shape, list of notes corresponding to fret, scale degrees and intervals
+
+inputs:
+note, chord type
+
+Output:
+Top: entire fretboard with all the base notes in the chord type
+Below: small box with root chord 

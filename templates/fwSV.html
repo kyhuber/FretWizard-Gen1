@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FretWizard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+
+</head>
+<body>
+    <h1>FretWizard</h1>
+    <h2>Scale Visualizer</h2>
+    <div id="scaleControls">
+        <label for="keySelect">Key:</label>
+        <select id="keySelect" class="keySelect">
+            <!-- Options populated by JavaScript -->
+        </select>
+    </div>
+    <div id="scaleTypeControls">
+        <label for="scaleTypeSelect">Scale Type:</label>
+        <select id="scaleTypeSelect">
+            <!-- Options populated by JavaScript -->
+        </select>
+    </div>  
+
+    <table class="fretwizard">
+        <thead>
+            <tr>
+                <th class="fretwizard-header">Drag</th>
+                <th class="fretwizard-header">String</th>
+                <!-- Fret numbers populated by JavaScript -->
+
+            </tr>
+        </thead>
+        <tbody>
+            <!-- String rows populated by JavaScript -->
+        </tbody>
+    </table>
+
+    <div style="text-align: left;">
+        <button id="addStringButton" style="margin-top: 10px;">Add String</button>
+    </div>
+
+    <!-- JavaScript files -->
+    <script src="{{ url_for('static', filename='js/fwShared.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/fwSV.js') }}"></script>
+</body>
+</html>

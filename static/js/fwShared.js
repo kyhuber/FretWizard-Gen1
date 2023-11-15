@@ -1,26 +1,43 @@
-// Define ALL_NOTES at the top of your script so it's available when needed
-const ALL_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+let allNotes;
+let scaleType;
+let scaleIntervals;
+let defaultTuning;
+let chordTypes;
+
+fetch('/static/static_data.json')
+    .then(response => response.json())
+    .then(data => {
+        allNotes = data.allNotes;
+        scaleType = data.scaleType;
+        scaleIntervals = data.scaleIntervals;
+        defaultTuning = data.defaultTuning;
+        initializeFretboardShared();
+        populateScaleTypeDropdown(scaleType);
+    })
+    .catch(error => {
+        console.error('Error loading JSON:', error);
+    });
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize the fretboard when the page loads
-    initializeFretboard();
+    initializeFretboardShared();
 
     // Event listeners for key and scale type selections
-    document.getElementById('keySelect').addEventListener('change', fetchAndUpdate);
-    document.getElementById('scaleTypeSelect').addEventListener('change', fetchAndUpdate);
+    document.getElementById('keySelect').addEventListener('change', fetchAndUpdateShared);
+    document.getElementById('scaleTypeSelect').addEventListener('change', fetchAndUpdateShared);
 
     // Event listener for the Add String button
-    document.getElementById('addStringButton').addEventListener('click', addString);
+    document.getElementById('addStringButton').addEventListener('click', addStringShared);
 });
 
-function initializeFretboard() {
+function initializeFretboardShared() {
     // Fetch initial setup data and create string rows
     fetch('/fretwizard_setup')
         .then(response => response.json())
         .then(data => {
-            if (data.strings && data.default_tuning) {
-                createStringRows(data.strings, data.default_tuning);
-                populateKeyDropdown(ALL_NOTES);
+            if (data.strings && data.defaultTuning) {
+                createStringRowsShared(data.strings, data.defaultTuning);
+                populateKeyDropdown(allNotes);
             }
         })
         .catch(error => console.error('Error initializing fretboard:', error));
@@ -32,13 +49,57 @@ function populateKeyDropdown(keys) {
     keySelect.innerHTML = keys.map(key => `<option value="${key}">${key}</option>`).join('');
 }
 
-function createStringRows(numStrings, tuningNotes) {
-    var tableBody = document.querySelector('.fretwizard tbody');
-    tableBody.innerHTML = '';
+function populateScaleTypeDropdown(scaleTypes) {
+    const scaleTypeSelect = document.getElementById('scaleTypeSelect');
+    scaleTypeSelect.innerHTML = scaleTypes.map(type => `<option value="${type}">${type}</option>`).join('');
+}
 
+function getNotesInKey(key, scaleType) {
+    const scaleIntervals = scaleIntervals[scaleType];
+    if (!scaleIntervals) {
+        throw new Error("Invalid scale type. Choose 'Major' or 'Minor'.");
+    }
+
+    let startIndex = allNotes.indexOf(key);
+    const scaleNotes = [allNotes[startIndex]];
+    scaleIntervals.forEach(interval => {
+        startIndex = (startIndex + interval) % 12;
+        scaleNotes.push(allNotes[startIndex]);
+    });
+    return scaleNotes;
+}
+
+function getNoteAtFret(string, fret) {
+    const index = allNotes.indexOf(string);
+    return allNotes[(index + fret) % 12];
+}
+
+function createStringRowsShared(numStrings, tuningNotes) {
+    // Get a reference to the table and tbody
+    var table = document.querySelector('.fretwizard');
+    var tableBody = table.querySelector('tbody');
+
+    // Create the header row
+    var headerRow = table.createTHead().insertRow(0);
+
+    // Add placeholder cells for "String" and "Note"
+    let stringHeaderCell = headerRow.insertCell(0);
+    stringHeaderCell.textContent = 'String';
+
+    let noteHeaderCell = headerRow.insertCell(1);
+    noteHeaderCell.textContent = 'Note';
+
+    // Add fret number cells
+    for (let fret = 0; fret < 15; fret++) {
+        let headerCell = headerRow.insertCell(fret + 2);
+        headerCell.textContent = fret;
+        headerCell.style.backgroundColor = 'green'; // Set the green background color
+    }
+
+    // Create rows and cells for strings
     for (let i = 0; i < numStrings; i++) {
         let newRow = tableBody.insertRow(-1);
-        newRow.draggable = true; // Make the row draggable
+        newRow.draggable = true;
         newRow.addEventListener('dragstart', handleDragStart);
         newRow.addEventListener('dragover', handleDragOver);
         newRow.addEventListener('drop', handleDrop);
@@ -51,7 +112,7 @@ function createStringRows(numStrings, tuningNotes) {
         let cellDropdown = newRow.insertCell(1);
         cellDropdown.innerHTML = `<select class="note-input" data-string="${i + 1}">
                                     <option value="">- -</option>
-                                    ${ALL_NOTES.map(note => `<option value="${note}"${tuningNotes[i] === note ? ' selected' : ''}>${note}</option>`).join('')}
+                                    ${allNotes.map(note => `<option value="${note}"${tuningNotes[i] === note ? ' selected' : ''}>${note}</option>`).join('')}
                                   </select>`;
 
         let deleteCell = newRow.insertCell(-1); // Add at the end of the row
@@ -68,11 +129,14 @@ function createStringRows(numStrings, tuningNotes) {
 
         cellDropdown.querySelector('.note-input').addEventListener('change', function() {
             updateStringNotes(i + 1, this.value);
-            fetchAndUpdate();
+            fetchAndUpdateShared();
         });
-}}
+    }
+}
 
-function addString() {
+
+
+function addStringShared() {
     // Add a new string to the fretboard
     fetch('/add_string', { method: 'POST' })
         .then(response => response.json())
@@ -94,7 +158,7 @@ function addString() {
                 let cellDropdown = newRow.insertCell(1);
                 cellDropdown.innerHTML = `<select class="note-input" data-string="${stringCount + 1}">
                                             <option value="">- -</option>
-                                            ${ALL_NOTES.map(note => `<option value="${note}">${note}</option>`).join('')}
+                                            ${allNotes.map(note => `<option value="${note}">${note}</option>`).join('')}
                                           </select>`;
 
                 for (let i = 0; i < 15; i++) {
@@ -112,7 +176,7 @@ function addString() {
 
                 cellDropdown.querySelector('.note-input').addEventListener('change', function() {
                     updateStringNotes(stringCount + 1, this.value);
-                    fetchAndUpdate();
+                    fetchAndUpdateShared();
                 });
             }
         })
@@ -135,10 +199,10 @@ function updateStringNotes(stringNumber, selectedNote) {
         var note = calculateFretNote(selectedNote, fretIndex);
         fret.setAttribute('data-note', note);
     });
-    fetchAndUpdate(); // Call this to refresh the highlighted notes
+    fetchAndUpdateShared(); // Call this to refresh the highlighted notes
 }
 
-function fetchAndUpdate() {
+function fetchAndUpdateShared() {
     console.log('Fetching and updating scale notes...');
     var key = document.getElementById('keySelect').value;
     var scaleType = document.getElementById('scaleTypeSelect').value; // Get the selected scale type

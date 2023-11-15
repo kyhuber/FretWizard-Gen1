@@ -1,28 +1,18 @@
+/* Global Styles */
+h1, h4 {
+    text-shadow: 1px 1px #ddd;
+}
+
 h1 {
-    color: #4CAF50; /* Green color for a lively look */
-    text-shadow: 2px 2px #ddd;
+    color: #4CAF50;
     transition: transform 0.5s ease-in-out;
-    /*animation: bounce 1s infinite;*/
 }
 
 h4 {
     color: #FF9800;
     font-style: italic;
-    text-shadow: 1px 1px #ddd;
 }
 
-        /* Additional Styling */
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% {
-    transform: translateY(0);
-    }
-    40% {
-        transform: translateY(-10px);
-    }
-    60% {
-        transform: translateY(-5px);
-    }
-}
 body {
     font-family: Arial, sans-serif;
     padding: 20px;
@@ -43,25 +33,36 @@ label, select, input {
     display: block;
 }
 
-
 /* Table Styling */
-table {
+table.fretwizard {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    table-layout: fixed;
+}
+
+table.fretwizard th {
+    background-color: #4CAF50;
+    color: white;
 }
 
 .table {
     display: none;
 }
 
-table, th, td {
+table.fretwizard, table.fretwizard th, table.fretwizard td {
     border: 1px solid #ddd;
+    text-align: center;
 }
 
-th, td {
-    padding: 10px;
-    text-align: center;
+/* Column Styling */
+table.fretwizard th, table.fretwizard td {
+    width: 6%;
+}
+
+/* First Column Styling */
+table.fretwizard th:first-child, table.fretwizard td:first-child {
+    width: 5%;
 }
 
 tr:nth-child(even) {
@@ -72,74 +73,77 @@ tr:nth-child(odd) {
     background-color: lightgray !important;
 }
 
-th {
-    background-color: #4CAF50;
-    color: white;
-}
-
-
 /* Letter Styling */
 td {
     font-weight: bold;
     font-size: 1.2em;
+    color: red;
+    position: relative;
+    z-index: 2;
+    background-clip: padding-box;
 }
 
+/* Fretboard Styling */
 .fretwizard {
-    background-image: url('images/fretboard_wood.png');
-    background-size: cover; /* or '100% 100%' to stretch to fill */
-    background-repeat: no-repeat; /* or 'repeat' for a tiling effect */
+    background-image: url('../images/fretboard_wood.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    position: relative;
 }
-/*.fretwizard {
-    background: #8B5A2B; /* a wood-like color */
-    border: 2px solid #3E1F00; /* dark border to represent the edge of the fretwizard */
-    border-spacing: 0; /* removes space between cells */
-  }*/
+
+.fretwizard-header {
+    background-color: #4CAF50;
+    color: white;
+  }
   
-  .fretwizard th, .fretwizard td {
-    border-left: 1px solid #C0A080; /* light color to represent frets */
+
+.fretwizard th, .fretwizard td {
+    border-left: 1px solid #C0A080;
     height: 20px;
-  }
-  
-  .fretwizard th:first-child, .fretwizard td:first-child {
+    position: relative;
+    z-index: 1;
+}
+
+.fretwizard table tr:first-child th {
+    background-color: #4CAF50;
+    color: white;
+  }  
+
+.fretwizard th:first-child, .fretwizard td:first-child {
     width: 80px;
-    border-left: none; /* no fret on the first cell */
-  }
-  
-  .string-container {
+    border-left: none;
+}
+
+.string-container {
     color: white;
     background-image: url('../images/fretboard_wood.png');
-    background-size: cover; /* Adjust as needed */
-    background-repeat: no-repeat; /* Use 'repeat' if you want it to tile */
+    background-size: cover;
+    background-repeat: no-repeat;
+    position: relative;
 }
 
- /* .string-container {
- /*   background: #FFF8DC; /* a light color to represent the string area */
- /*   position: relative; /* allows absolute positioning inside */
- /*   z-index: 1; /* create a new stacking context */
- /*   height: 40px;
-}
-
-  .note-circle {
-    position: absolute; /* position absolutely within .string-container */
-    top: 50%; /* center vertically */
-    left: 50%; /* center horizontally */
-    transform: translate(-50%, -50%); /* adjust both horizontally and vertically */
-    width: 30px; /* adjust as needed */
-    height: 30px; /* adjust as needed */
-    border-radius: 50%; /* circular shape */
-    background-color: #FFF; /* background color for the circle */
-    display: flex; /* use flexbox to center content */
-    align-items: center; /* center vertically */
-    justify-content: center; /* center horizontally */
-    text-align: center; /* ensure text is centered */
-    line-height: 30px; /* adjust line height to match height for vertical centering */
+.note-circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #333;
+    color: white
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 30px;
     z-index: 3;
 }
-  
+
 .note-input {
     width: 50px;
     text-align-last: center;
-    }
+}
 
 .keySelect {
     width: 100px;
@@ -147,48 +151,49 @@ td {
 }
 
 .root-note {
-    border: 3px solid #4CAF50; /* Green color */
-    border-radius: 50%; /* Maintain the circle shape */
-    box-sizing: border-box; /* Include the border in the width and height */
-    z-index: 2; /* Ensure it's above the .string-container::after */
-    position: relative; /* Needed to make z-index work */
-  }
+    border: 3px solid #4CAF50;
+    border-radius: 50%;
+    box-sizing: border-box;
+    z-index: 1;
+    position: relative;
+}
 
 .drag-handle {
     cursor: move;
-    background-color: #f0f0f0; /* Light grey background */
+    background-color: #f0f0f0;
     text-align: center;
     vertical-align: middle;
-    font-size: 1.2em; /* Larger icon size */
-    width: 20px; /* Fixed width */
+    font-size: 1.2em;
+    width: 6px;
 }
 
 /* Apply alternating colors to drag handle cells */
 tr:nth-child(even) .drag-handle {
-    background-color: #f2f2f2a3; /* Light color for even rows */
+    background-color: #f2f2f2a3;
 }
 
 tr:nth-child(odd) .drag-handle {
-    background-color: lightgray; /* Different color for odd rows */
+    background-color: lightgray;
 }
 
 tr.dragging {
     opacity: 0.5;
-    background-color: #e0e0e0; /* Light grey background */
-    border: 1px dashed #000; /* Dashed border */
+    background-color: #e0e0e0;
+    border: 1px dashed #000;
 }
 
 .drag-handle:hover {
-    background-color: #d0d0d0; /* Slightly darker grey on hover */
+    background-color: #d0d0d0;
 }
 
 .delete-btn {
-    font-size: 16px; /* Adjusts the size of the icon */
-    padding: 5px 5px; /* Adjusts the padding around the icon */
-    border: none; /* Removes the border */
-    background-color: transparent; /* Sets a transparent background */
-    cursor: pointer; /* Changes cursor to pointer on hover */
+    font-size: 16px;
+    padding: 5px 5px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
 }
+
 .delete-btn i {
     color: rgba(232, 19, 19, 0.75);
 }
